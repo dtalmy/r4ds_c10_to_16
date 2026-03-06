@@ -40,7 +40,9 @@ csv_path <- "../data/handb_ptest.csv"   # <-- update if needed
 **Task:** Read the CSV into an object called `raw`, then preview it.
 
 ```{r}
-# YOUR CODE HERE
+library(readr)
+raw <- read_csv('/Users/malloryduy/Documents/MICR_475/Homeworks/r4ds_c10_to_16/data/handb_ptest.csv')
+view(raw)
 ```
 
 ------------------------------------------------------------------------
@@ -65,7 +67,18 @@ In the raw Google Forms export, the response columns have long names that includ
 **Task D:** Make a **box plot** of `percent` by `chart_type` (no log transform).
 
 ```{r}
-# YOUR CODE HERE
+df <- raw |> pivot_longer(
+  cols = c(2:19), names_to = "question",
+  values_to = "score"
+)
+df <- df |> mutate( score = parse_number(as.character(score)))
+
+df<- df |> filter(!is.na(score))
+
+df <- df |> mutate(
+  question = str_replace( question, "The smaller is approximately ___% of the larger...","question"))
+
+df |> ggplot(mapping = aes(x = reorder (question, parse_number(question)), y = score)) + geom_boxplot() 
 ```
 
 ------------------------------------------------------------------------
@@ -85,7 +98,15 @@ This method uses the idea that (after `Timestamp`) the remaining columns are the
 **Task E:** Make the same **box plot** of `percent` by `chart_type`.
 
 ```{r}
-# YOUR CODE HERE
+my_names = c('timestamp', paste0("q",1:9))
+
+df <- raw |> select(Timestamp, starts_with("The")) |> set_names(my_names)
+
+df<- df |> pivot_longer(
+  cols = c(2:10), names_to = "question",
+  values_to = "score")
+df <- df |> mutate( score = parse_number(as.character(score)))
+df |> ggplot(mapping = aes(x = reorder (question, parse_number(question)), y = score)) + geom_boxplot() 
 ```
 
 ------------------------------------------------------------------------
@@ -97,5 +118,5 @@ This method uses the idea that (after `Timestamp`) the remaining columns are the
 **Task B:** In 3–6 sentences, comment on what the box plots show. Does it give the same gist that we would expect from Heer and Bostock's results? If not, why not?
 
 ```{r}
-# YOUR CODE HERE
+#The box plots from Q2 and Q3 are the same. The box plots show that the medians for the question asking what percent of the larger shape is the smaller shape are all pretty similar for questions 1-5 and questions 8 and 9. Question 6 has the lowest median and largest interquartile range and question 7 has another low median and is a larger IQR. This does not give the same gist that we would expect from Heer and Bostock's results because that plot shows more error and variability as the plots go on, but the results remain pretty consistent through each question and chart type. 
 ```
